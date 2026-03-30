@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CFGHS Lubao Peeps — Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+    rel="stylesheet" />
+
+  <!-- Firebase Compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --sky-50: #f0f9ff;
+      --sky-100: #e0f2fe;
+      --sky-200: #bae6fd;
+      --sky-300: #7dd3fc;
+      --sky-400: #38bdf8;
+      --sky-500: #0ea5e9;
+      --sky-600: #0284c7;
+      --sky-700: #0369a1;
+      --sky-800: #075985;
+      --sky-900: #0c4a6e;
+      --green: #22c55e;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --radius: .75rem;
+      --t: .18s cubic-bezier(.4, 0, .2, 1);
+    }
+
+    html {
+      font-size: 16px;
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      color: var(--sky-900);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      position: relative;
+      background: linear-gradient(160deg, #0c1a2e 0%, #061122 100%);
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      background-image: url('IMG_20260328_203558 (1).jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      background-attachment: fixed;
+      opacity: .18;
+      pointer-events: none;
+    }
+
+    .login-box {
+      position: relative;
+      z-index: 1;
+      background: white;
+      border-radius: 1.25rem;
+      padding: 2.5rem 2rem;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, .4);
+      text-align: center;
+      animation: fadeUp .4s ease both;
+    }
+
+    .login-logo {
+      font-family: 'Sora', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--sky-700);
+      margin-bottom: .2rem;
+    }
+
+    .login-sub {
+      font-size: .83rem;
+      color: var(--sky-400);
+      margin-bottom: 1.75rem
+    }
+
+    .login-fields {
+      display: flex;
+      flex-direction: column;
+      gap: .85rem;
+      margin-bottom: 1.1rem;
+      text-align: left
+    }
+
+    .field-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem
+    }
+
+    .field-label {
+      font-family: 'Sora', sans-serif;
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--sky-600);
+      letter-spacing: .05em;
+      text-transform: uppercase;
+    }
+
+    .field-input {
+      padding: .65rem 1rem;
+      border: 1.5px solid var(--sky-200);
+      border-radius: .625rem;
+      font-family: inherit;
+      font-size: .92rem;
+      color: var(--sky-900);
+      background: var(--sky-50);
+      outline: none;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .field-input:focus {
+      border-color: var(--sky-400);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, .15);
+      background: white;
+    }
+
+    .field-input::placeholder {
+      color: var(--sky-300)
+    }
+
+    /* PIN dots */
+    .pin-wrap {
+      position: relative
+    }
+
+    .pin-dots {
+      display: flex;
+      justify-content: center;
+      gap: .75rem;
+      padding: .65rem 1rem;
+      border: 1.5px solid var(--sky-200);
+      border-radius: .625rem;
+      background: var(--sky-50);
+      cursor: text;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+
+    .pin-wrap:focus-within .pin-dots {
+      border-color: var(--sky-400);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, .15);
+      background: white;
+    }
+
+    .pin-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--sky-200);
+      transition: background var(--t);
+    }
+
+    .pin-dot.filled {
+      background: var(--sky-700)
+    }
+
+    .pin-input-hidden {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: text;
+      font-size: 1px;
+    }
+
+    .login-error {
+      min-height: 1.2rem;
+      font-size: .8rem;
+      color: var(--red);
+      font-family: 'Sora', sans-serif;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: .5rem;
+    }
+
+    .avatar-picker {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .45rem;
+      justify-content: center;
+      margin-bottom: 1.25rem
+    }
+
+    .avatar-opt {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--t);
+    }
+
+    .avatar-opt:hover {
+      transform: scale(1.1)
+    }
+
+    .avatar-opt.selected {
+      border-color: var(--sky-500);
+      box-shadow: 0 0 0 3px rgba(14, 165, 233, .25)
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: .7rem;
+      background: var(--sky-500);
+      color: white;
+      border: none;
+      border-radius: .625rem;
+      font-family: 'Sora', sans-serif;
+      font-size: .95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background var(--t), transform var(--t);
+    }
+
+    .login-btn:hover {
+      background: var(--sky-600);
+      transform: translateY(-1px)
+    }
+
+    .login-btn:active {
+      transform: translateY(0)
+    }
+
+    .login-btn:disabled {
+      background: var(--sky-300);
+      cursor: not-allowed;
+      transform: none
+    }
+
+    .loading-msg {
+      font-size: .8rem;
+      color: var(--sky-400);
+      font-family: 'Sora', sans-serif;
+      margin-top: .75rem;
+      min-height: 1.1rem;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .dev-credit {
+      margin-top: 1.4rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--sky-100);
+      text-align: center;
+      font-size: .7rem;
+      color: var(--sky-900);
+      font-family: 'Sora', sans-serif;
+      font-weight: 500;
+      letter-spacing: .04em;
+    }
+
+    .color-hint {
+      font-size: .7rem;
+      color: var(--sky-400);
+      text-align: center;
+      margin-top: -0.8rem;
+      margin-bottom: 1rem;
+      font-family: 'Sora', sans-serif;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-box">
+    <div class="login-logo">CFGHS Lubao Peeps</div>
+    <div class="login-sub">Enter your first name and 4-digit PIN</div>
+
+    <div class="login-fields">
+      <div class="field-wrap">
+        <label class="field-label">First Name</label>
+        <input class="field-input" id="nameInput" type="text" placeholder="e.g. Clarence" maxlength="24"
+          autocomplete="given-name" />
+      </div>
+      <div class="field-wrap">
+        <label class="field-label">4-Digit PIN</label>
+        <div class="pin-wrap">
+          <div class="pin-dots" id="pinDots">
+            <div class="pin-dot" id="pd0"></div>
+            <div class="pin-dot" id="pd1"></div>
+            <div class="pin-dot" id="pd2"></div>
+            <div class="pin-dot" id="pd3"></div>
+          </div>
+          <input class="pin-input-hidden" id="pinInput" type="number" inputmode="numeric" pattern="[0-9]*" maxlength="4"
+            autocomplete="one-time-code" />
+        </div>
+      </div>
+    </div>
+
+    <div class="login-error" id="loginError"></div>
+
+    <!-- Replace the avatar-picker section with this updated version -->
+    <div
+      style="font-size:.75rem;color:var(--sky-500);font-family:'Sora',sans-serif;font-weight:600;margin-bottom:.45rem;letter-spacing:.03em;">
+      Choose an icon for your profile
+    </div>
+    <div class="avatar-picker" id="avatarPicker">
+      <div class="avatar-opt selected" data-emoji="😄" data-color="#b5e1ff" style="background:#b5e1ff">😄</div>
+      <div class="avatar-opt" data-emoji="😎" data-color="#ffeda6" style="background:#ffeda6">😎</div>
+      <div class="avatar-opt" data-emoji="🤩" data-color="#ffb6df" style="background:#ffb6df">🤩</div>
+      <div class="avatar-opt" data-emoji="✨" data-color="#d0c5ff" style="background:#d0c5ff">✨</div>
+      <div class="avatar-opt" data-emoji="💚" data-color="#c4ffd9" style="background:#c4ffd9">💚</div>
+      <div class="avatar-opt" data-emoji="🙃" data-color="#ffddb5" style="background:#ffddb5">🙃</div>
+      <div class="avatar-opt" data-emoji="🦸" data-color="#b0f8ff" style="background:#b0f8ff">🦸</div>
+      <div class="avatar-opt" data-emoji="🐱" data-color="#9cffbf" style="background:#9cffbf">🐱</div>
+      <div class="avatar-opt" data-emoji="🎤" data-color="#ff9cd6" style="background:#ff9cd6">🎤</div>
+      <div class="avatar-opt" data-emoji="🌇" data-color="#d0c5ff" style="background:#d0c5ff">🌇</div>
+      <div class="avatar-opt" data-emoji="💠" data-color="#70b3ff" style="background:#70b3ff">💠</div>
+    </div>
+    <div class="color-hint">Each emoji has its own background color</div>
+
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Log In 💙</button>
+    <div class="loading-msg" id="loadingMsg"></div>
+
+    <div class="dev-credit">Developed By: Clarence Jefferson T. Bulatao</div>
+  </div>
+
+  <script>
+    'use strict';
+
+    // ═══════════════════════════════════
+    //  FIREBASE CONFIG
+    // ═══════════════════════════════════
+    const firebaseConfig = {
+      apiKey: "AIzaSyBuPFyaQuDkd-8Pt_lBn5sxuxVzP2iPcJc",
+      authDomain: "chat-b8f20.firebaseapp.com",
+      projectId: "chat-b8f20",
+      storageBucket: "chat-b8f20.firebasestorage.app",
+      messagingSenderId: "753569728296",
+      appId: "1:753569728296:web:5cb3bd1e9f0967f717b21d"
+    };
+
+    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // ═══════════════════════════════════
+    //  PIN INPUT
+    // ═══════════════════════════════════
+    const pinInput = document.getElementById('pinInput');
+    pinInput.addEventListener('input', () => {
+      const val = pinInput.value.replace(/\D/g, '').slice(0, 4);
+      pinInput.value = val;
+      for (let i = 0; i < 4; i++) {
+        document.getElementById('pd' + i).classList.toggle('filled', i < val.length);
+      }
+    });
+    pinInput.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('nameInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') pinInput.focus();
+    });
+    document.getElementById('pinDots').addEventListener('click', () => pinInput.focus());
+
+    // ═══════════════════════════════════
+    //  AVATAR PICKER WITH COLORS
+    // ═══════════════════════════════════
+    document.querySelectorAll('.avatar-opt').forEach(opt => {
+      opt.addEventListener('click', () => {
+        document.querySelectorAll('.avatar-opt').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+      });
+    });
+    
+    function getEmoji() {
+      const s = document.querySelector('.avatar-opt.selected');
+      return s ? s.dataset.emoji : '😄';
+    }
+    
+    function getAvatarColor() {
+      const s = document.querySelector('.avatar-opt.selected');
+      return s ? s.dataset.color : '#b5e1ff';
+    }
+
+    // ═══════════════════════════════════
+    //  LOGIN  — validates against Firestore "users" collection
+    // ═══════════════════════════════════
+    async function doLogin() {
+      const name = document.getElementById('nameInput').value.trim();
+      const pin = pinInput.value.trim();
+      const errEl = document.getElementById('loginError');
+      const btn = document.getElementById('loginBtn');
+      const loadEl = document.getElementById('loadingMsg');
+      const lowerName = name.toLowerCase();
+
+      errEl.textContent = '';
+      errEl.style.color = 'var(--red)';
+
+      // ✨ CUSTOM MESSAGES - DITO MO LANG I-EDIT ✨
+      const customMessages = {
+        'Michaela': 'So, Michaela na tatawag ko saiyo?? 🤔',
+        'michaela': 'So, Michaela na tatawag ko saiyo?? 🤔',
+        'Anne': 'Ahm, 2 words, 2 words HWHAHAHAHAHHA',
+        'anne': 'Ahm, 2 words, 2 words HWHAHAHAHAHHA',
+        'bfly': 'Hi, Bflyy, use your first namee',
+        'Bfly': 'Hi, Bflyy, use your first namee',
+        'Butterfly': 'Hi, Bflyy, use your first namee',
+        'butterfly': 'Hi, Bflyy, use your first namee',
+        'Rod': 'Paki-complete HAHAHHAHAHA',
+        'rod': 'Paki-complete HAHAHHAHAHA',
+        'Renzo': 'Ahm, 2 words, 2 words HWHAHAHAHAHHA',
+        'renzo': 'Ahm, 2 words, 2 words HWHAHAHAHAHHA',
+      };
+
+      if (!name) {
+        errEl.textContent = 'Please enter your first name.';
+        return;
+      }
+
+      if (pin.length !== 4) {
+        errEl.textContent = '4-digit PIN is needed.';
+        return;
+      }
+
+      btn.disabled = true;
+      loadEl.textContent = 'Checking…';
+
+      try {
+        const snap = await db.collection('users')
+          .where('firstnameLower', '==', name.toLowerCase())
+          .limit(1)
+          .get();
+
+        if (snap.empty) {
+          if (customMessages[lowerName]) {
+            errEl.textContent = customMessages[lowerName];
+          } else {
+            errEl.textContent = name + ' is not registered as first name. Kindly try a different one.';
+          }
+          btn.disabled = false;
+          loadEl.textContent = '';
+          return;
+        }
+
+        const userData = snap.docs[0].data();
+
+        if (userData.code !== pin) {
+          if (customMessages[lowerName]) {
+            errEl.textContent = customMessages[lowerName];
+          } else {
+            errEl.textContent = 'Wrong PIN 🤦🏽‍♂️. Kindly check your paper again, ' + name + '.';
+          }
+          btn.disabled = false;
+          loadEl.textContent = '';
+          return;
+        }
+
+        // SUCCESS - Use emoji's assigned color instead of generating from name
+        if (customMessages[lowerName]) {
+          loadEl.textContent = customMessages[lowerName] + ' Redirecting...';
+          loadEl.style.color = 'var(--green)';
+        } else {
+          loadEl.textContent = 'Redirecting…';
+        }
+
+        const sessionData = {
+          firstname: userData.firstname,
+          role: userData.role,
+          emoji: getEmoji(),
+          color: getAvatarColor(), // Use the emoji's assigned color
+          ts: Date.now(),
+          nonce: Math.random().toString(36).slice(2)
+        };
+
+        const token = btoa(unescape(encodeURIComponent(JSON.stringify(sessionData))));
+        sessionStorage.setItem('cfghs_session', token);
+
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        errEl.textContent = 'Could not reach server. Check your connection.';
+        btn.disabled = false;
+        loadEl.textContent = '';
+      }
+    }
+  </script>
+</body>
+
+</html>
