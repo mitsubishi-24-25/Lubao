@@ -204,7 +204,6 @@
       background: #000;
       width: 100%;
       padding-bottom: 56.25%;
-      /* 16:9 aspect ratio */
       overflow: hidden;
     }
 
@@ -215,8 +214,20 @@
       width: 100%;
       height: 100%;
       border: none;
-      object-fit: contain;
-      /* Ensures full video is visible, no crop */
+      pointer-events: auto;
+      /* Ensure iframe receives all clicks */
+    }
+
+    /* This ensures fullscreen mode works properly */
+    .player-wrap:fullscreen {
+      padding-bottom: 0;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    .player-wrap:fullscreen iframe {
+      height: 100%;
+      width: 100%;
     }
 
     .video-meta {
@@ -1147,8 +1158,9 @@
       <div class="video-card">
 
         <div class="player-wrap" id="playerWrap">
-          <iframe src="https://drive.google.com/file/d/137mZujRP1ntNxwTwvGhdDQM659BTo2U3/preview" frameborder="0"
-            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+          <iframe src="https://drive.google.com/file/d/137mZujRP1ntNxwTwvGhdDQM659BTo2U3/preview?autoplay=0&controls=1"
+            frameborder="0" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen
+            webkitallowfullscreen mozallowfullscreen
             style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;">
           </iframe>
         </div>
