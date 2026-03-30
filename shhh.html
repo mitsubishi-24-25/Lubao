@@ -202,18 +202,21 @@
     .player-wrap {
       position: relative;
       background: #000;
-      aspect-ratio: 16/9;
       width: 100%;
+      padding-bottom: 56.25%;
+      /* 16:9 aspect ratio */
       overflow: hidden;
     }
 
     .player-wrap iframe {
       position: absolute;
-      inset: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       border: none;
-      display: block;
+      object-fit: contain;
+      /* Ensures full video is visible, no crop */
     }
 
     .video-meta {
@@ -1144,8 +1147,9 @@
       <div class="video-card">
 
         <div class="player-wrap" id="playerWrap">
-          <iframe src="https://drive.google.com/file/d/137mZujRP1ntNxwTwvGhdDQM659BTo2U3/preview" width="100%"
-            height="100%" allow="autoplay" allowfullscreen>
+          <iframe src="https://drive.google.com/file/d/137mZujRP1ntNxwTwvGhdDQM659BTo2U3/preview" frameborder="0"
+            allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+            style="position:absolute; top:0; left:0; width:100%; height:100%; border:none;">
           </iframe>
         </div>
 
