@@ -301,6 +301,26 @@
 </head>
 
 <body>
+  <script>
+    'use strict';
+
+    // Check if user already logged in
+    const existingSession = sessionStorage.getItem('cfghs_session');
+    if (existingSession) {
+      try {
+        const sessionData = JSON.parse(decodeURIComponent(escape(atob(existingSession))));
+        // Check if session is still valid (optional: add expiry check)
+        if (sessionData && sessionData.firstname) {
+          // Redirect immediately if already logged in
+          window.location.href = 'shhh.html';
+        }
+      } catch (e) {
+        // Invalid session, clear it
+        sessionStorage.removeItem('cfghs_session');
+      }
+    }
+  </script>
+
   <div class="login-box">
     <div class="login-logo">CFGHS Lubao Peeps</div>
     <div class="login-sub">Enter your first name and 4-digit PIN</div>
@@ -398,12 +418,12 @@
         opt.classList.add('selected');
       });
     });
-    
+
     function getEmoji() {
       const s = document.querySelector('.avatar-opt.selected');
       return s ? s.dataset.emoji : '😄';
     }
-    
+
     function getAvatarColor() {
       const s = document.querySelector('.avatar-opt.selected');
       return s ? s.dataset.color : '#b5e1ff';
